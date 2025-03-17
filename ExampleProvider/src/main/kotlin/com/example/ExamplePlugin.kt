@@ -7,6 +7,7 @@ import android.content.Context
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 
+
 @CloudstreamPlugin
 class TestPlugin: Plugin() {
     var activity: AppCompatActivity? = null
