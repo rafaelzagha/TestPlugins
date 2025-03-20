@@ -39,6 +39,7 @@ subprojects {
         setRepo(System.getenv("GITHUB_WORKSPACE") ?: "https://github.com/rafaelzagha/TestPlugins")
     }
 
+
     android {
         defaultConfig {
             minSdk = 21
