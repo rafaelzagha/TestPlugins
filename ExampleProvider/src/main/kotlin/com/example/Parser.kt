@@ -22,14 +22,14 @@ data class Episode(
     val name: String,
     val editedName: String? = null,
     val released: String,
-    val titlePt: String,
-    val rating: String,
-    val runtime: String? = null,
+    val titlePt: String?=null,
+    val rating: Float,
+    val runtime: Int? = null,
     val airdate: String
 )
 
 data class Season(
-    val id: String,
+    val id: Int,
     val name: String,
     val episodesCount: Int,
     val episodes: Map<String, Episode>

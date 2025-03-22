@@ -3,11 +3,13 @@ package com.example
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.readValues
 import com.lagradost.api.Log
+import com.lagradost.cloudstream3.Episode
 import com.lagradost.cloudstream3.LoadResponse
 import com.lagradost.cloudstream3.TvType
 import com.lagradost.cloudstream3.MainAPI
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.SearchResponse
+import com.lagradost.cloudstream3.SeasonData
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.mapper
 import com.lagradost.cloudstream3.network.initClient
@@ -23,6 +25,7 @@ import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.INFER_TYPE
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getExtractorApiFromName
+import com.lagradost.cloudstream3.utils.schemaStripRegex
 import okhttp3.OkHttpClient
 import org.json.JSONArray
 import org.json.JSONObject
@@ -45,7 +48,7 @@ class ExampleProvider() : MainAPI() { // all providers must be an intstance of M
 
         val list = json.list.values
         return list.map { movie ->
-            newMovieSearchResponse(name = movie.title, url = movie.imdb){
+            newMovieSearchResponse(name = movie.title, url = "${movie.type.replace("movie", "filme")}/${movie.imdb}"){
                 posterUrl = "https://warezcdn.link/content/${movie.type}s/posterPt/342/${movie.id}.webp";
             }
         }
@@ -72,33 +75,51 @@ class ExampleProvider() : MainAPI() { // all providers must be an intstance of M
         return json.getString("securedLink");
     }
 
-    suspend fun getMovieInfo(id:String){
-        val url = "https://api.themoviedb.org/3/find/tt11280740?external_source=imdb_id"
-        val id = JSONObject(app.get(url, headers = mapOf(
-            "Authorization" to "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiMWI5ZTI5MDlhODI2NjRhMDUyM2IzZjc4NDQ5OTQ0MyIsIm5iZiI6MTYzNTE3MjA0OC4xMzYsInN1YiI6IjYxNzZiZWQwYTU3OWY5MDA2NjMwYTdlYyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.VDfbR00LEktPaZzKupcIWJ0O6Ni98YL7yGPbH3QFuPA"
-        )).text).get((id));
-
-    }
-
     override suspend fun load(url: String): LoadResponse? {
+
+//        Log.d("Mytag", "hello");
 
         val movie = url.contains("filme");
         if(movie){
             val response = app.get(url).text
             val sourcesString = response.split("let data = \'")[1].split("\';\n\t\tvar currentTitle")[0]
             val sources = mapper.readValue<List<Media>>(sourcesString);
-
             val title = response.split("currentTitle = '")[1].split("';\n\n\t\t\$(function()")[0]
 
 //            Log.d("Mytag", sources[0].id.toString());
 
             return newMovieLoadResponse(name = title, url="", type= TvType.Movie, dataUrl =getSourceUrl(sources[1].id)){
                 posterUrl = response.split("image: url('")[1].split("');\"></backdrop>")[0];
+
+            }
+        }
+        else{
+            val response = app.get(url)
+            val poster = response.document.select("backdrop").attr("style").split("\'")[1]
+            val title = response.text.split(";\n\t\tvar currentTitle = \"")[1].split("\";\n\n\t\t\$(function ()")[0]
+
+            val seasonsUrl = response.text.split("var cachedSeasons = \"")[1].split("\";\n\t\tvar preLoadSeason")[0]
+            val seasonsInfo = mapper.readValue<ShowData>(app.get("${mainUrl}/$seasonsUrl)").text).seasons.values.toList()
+
+            val episodes = ArrayList<Episode>();
+            seasonsInfo.forEachIndexed{index, season ->
+                season.episodes.values.toList().forEachIndexed{i, epi->
+                    episodes.add(newEpisode(epi.id){
+                        this.name=epi.titlePt?:"Episode ${i+1}"
+                        this.season=index+1
+                        this.episode = i+1
+                        this.posterUrl ="https://warezcdn.link/content/series/episodes/185/${epi.id}.webp"
+                        this.rating = epi.rating.toInt()
+                        this.runTime = epi.runtime
+                    })
+                }
             }
 
-        }
 
-        return super.load(url)
+            return newTvSeriesLoadResponse(name=title, type=TvType.TvSeries, url="", episodes = episodes){
+                posterUrl = poster
+            }
+        }
     }
 
     override suspend fun loadLinks(
@@ -107,6 +128,7 @@ class ExampleProvider() : MainAPI() { // all providers must be an intstance of M
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
+
         callback.invoke(ExtractorLink(name, name, data,"", Qualities.P1080.value, INFER_TYPE));
         return true;
         return super.loadLinks(data, isCasting, subtitleCallback, callback)
