@@ -25,7 +25,7 @@ data class Episode(
     val titlePt: String?=null,
     val rating: Float,
     val runtime: Int? = null,
-    val airdate: String
+    val airdate: String? = null
 )
 
 data class Season(
@@ -40,4 +40,4 @@ data class ShowData(
     val seasons: Map<String, Season>
 )
 
-data class Media(val id: Int, val audio: String, val servers: String)
+data class Media(val id: Int, val audio: Int, val servers: String)
