@@ -23,6 +23,7 @@ import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.getQualityFromName
 import com.lagradost.cloudstream3.utils.loadExtractor
 import org.json.JSONObject
+import java.time.LocalTime
 
 class ExampleProvider() : MainAPI() { // all providers must be an intstance of MainAPI
     override var mainUrl = "https://embed.warezcdn.link"
@@ -43,6 +44,7 @@ class ExampleProvider() : MainAPI() { // all providers must be an intstance of M
         return list.map { movie ->
             newMovieSearchResponse(name = movie.title, url = "${movie.type.replace("movie", "filme")}/${movie.imdb}"){
                 posterUrl = "https://warezcdn.link/content/${movie.type}s/posterPt/342/${movie.id}.webp";
+
             }
         }
     }
@@ -94,7 +96,7 @@ class ExampleProvider() : MainAPI() { // all providers must be an intstance of M
                 }
             }
 
-            return newTvSeriesLoadResponse(name=title, type=TvType.TvSeries, url="", episodes = episodes){
+            return newTvSeriesLoadResponse(name=title, type=TvType.TvSeries, url=id, episodes = episodes){
                 backgroundPosterUrl = poster
                 posterUrl = "https://warezcdn.link/content/series/posterPt/342/${id}.webp"
             }
@@ -107,12 +109,14 @@ class ExampleProvider() : MainAPI() { // all providers must be an intstance of M
         val response = app.get("https://embed.warezcdn.link/getPlay.php?id=${id}&sv=warezcdn", referer=url).text;
 
         val videoUrl = Regex("href = \"(.*?)\"").find(response)?.groupValues?.get(1)?.split("?sub=")
-        val videoID = videoUrl?.get(0)?:""//change later
-        val subUrl = videoUrl?.get(1)?:""
+        val videoID = videoUrl?.get(0)?.split("video/")?.get(1) ?:""
+        Log.d("Mytag", videoID);
+//        val subUrl = videoUrl?.get(1)?:""
 
         val stream = "https://basseqwevewcewcewecwcw.xyz/player/index.php?data=${videoID}&do=getVideo"
-
+        Log.d("Mytag", "hello");
         val returned = app.post(stream, data = mapOf("hash" to videoID, "r" to  "https://embed.warezcdn.link/"), headers = mapOf("x-requested-with" to "XMLHttpRequest"))
+        Log.d("Mytag", returned.text);
         val json = JSONObject(returned.text)
         return json.getString("securedLink");
     }
@@ -148,6 +152,8 @@ class ExampleProvider() : MainAPI() { // all providers must be an intstance of M
             val lang =  if(it.audio==2) "Dublado" else "Legendado"
 
             val url = getSourceUrl(it.id)
+            Log.d("Mytag", url);
+//            loadExtractor(url, subtitleCallback, callback)
             callback.invoke(ExtractorLink(source=name,name ="WarezCDN $lang"  , url,"", getQualityFromName(url), INFER_TYPE));
 
         }
