@@ -52,7 +52,10 @@ For local plugin testing, you need to grant the app "All Files Access" on newer 
 Everything in this repo is released into the public domain. You may use it however you want with no conditions whatsoever
 
 
+
 ## Attribution
 
 This template as well as the gradle plugin and the whole plugin system is **heavily** based on [Aliucord](https://github.com/Aliucord).
 *Go use it, it's a great mobile discord client mod!*
+
+[Add](cloudstreamrepo://raw.githubusercontent.com/rafaelzagha/TestPlugins/refs/heads/builds/repo.json)
