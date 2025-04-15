@@ -7,15 +7,15 @@
         "status": 1,
         "language": "en",
         "authors": [
-            "Cloudburst"
+            "Rafi"
         ],
         "tvTypes": [
-            "Movie"
+            "Movie","TvSeries"
         ],
         "version": -1,
-        "internalName": "ExampleProvider",
-        "description": "Lorem ipsum",
+        "internalName": "WarezCdn",
+        "description": "You know it",
         "url": "https://raw.githubusercontent.com/rafaelzagha/TestPlugins/builds/ExampleProvider.cs3",
-        "name": "ExampleProvider"
+        "name": "The best provider"
     }
 ]
