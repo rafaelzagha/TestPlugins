@@ -3,6 +3,6 @@
     "description": "Only the best repo ever",
     "manifestVersion": 1,
     "pluginLists": [
-    "https://raw.githubusercontent.com/rafaelzagha/TestPlugins/refs/heads/builds/plugins.json"
+    "https://raw.githubusercontent.com/rafaelzagha/TestPlugins/builds/plugins.json"
     ]
 }
